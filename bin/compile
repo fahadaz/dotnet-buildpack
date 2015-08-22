@@ -123,7 +123,7 @@ else
 	APP_ROOT=$(echo "$ROOTS" | head -1)
 	cat << EOT >> ${BUILD_DIR}/Procfile
 # web: dnx --appbase $APP_ROOT Microsoft.Framework.ApplicationHost kestrel --configuration Release --server.urls http://+:\$PORT
-web: dnx --appbase $APP_ROOT --lib $LD_LIBRARY_PATH Microsoft.AspNet.Hosting --server Kestrel --server.urls http://+:\$PORT
+web: dnx --appbase $APP_ROOT --lib /app/mono/lib Microsoft.AspNet.Hosting --server Kestrel --server.urls http://+:\$PORT
 EOT
 	fi
 fi
