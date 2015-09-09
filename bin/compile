@@ -27,8 +27,16 @@ export_env_dir ${ENV_DIR}
 
 if [ -n "$BUILD_DEBUG" ]; then
 	DNU_FLAGS=""
+	echo "DNX_VERSION: ${DNX_VERSION}"
+	echo "DNVM_BRANCH: ${DNVM_BRANCH}"
 else
 	DNU_FLAGS="--quiet"
+fi
+
+if [ -n "$UNSTABLE_TOOLCHAIN" ]; then
+	DNVM_FLAGS="-u"
+else
+	DNVM_FLAGS=""
 fi
 
 SRC_DIR=`mktemp -d`
@@ -51,6 +59,7 @@ export LD_LIBRARY_PATH="/app/mono/lib:${LD_LIBRARY_PATH}"
 mozroots --import --sync --quiet
 cp -r ~/.config ${BUILD_DIR}/.
 
+# TODO: This test doesn't seen to actually work
 if [[ -n $(find . -type f -iname package.json -o -iname bower.json -o -iname gruntfile.js) ]]
 then
 	# Install Node and grunt-cli
@@ -76,7 +85,7 @@ mkdir -p ${DNVM_RUNTIME_CACHE_LOCATION}
 ln -s ${DNVM_RUNTIME_CACHE_LOCATION} ${DNVM_RUNTIME_LOCAL_CACHE}/runtimes
 
 # TODO: extract DNX version from global.json
-dnvm install $DNX_VERSION -u -a default
+dnvm install $DNX_VERSION $DNVM_FLAGS -a default
 
 # Add DNX to the build output
 DNX_BUILD_LOCATION=${BUILD_DIR}/.dnx/runtimes/
@@ -122,8 +131,7 @@ else
 	if [ $( echo "${ROOTS}" | wc -l ) -gt 0 ]; then
 	APP_ROOT=$(echo "$ROOTS" | head -1)
 	cat << EOT >> ${BUILD_DIR}/Procfile
-# web: dnx --appbase $APP_ROOT Microsoft.Framework.ApplicationHost kestrel --configuration Release --server.urls http://+:\$PORT
-web: dnx --appbase $APP_ROOT --lib /app/mono/lib Microsoft.AspNet.Hosting --server Kestrel --server.urls http://+:\$PORT
+web: dnx --appbase $APP_ROOT Microsoft.Framework.ApplicationHost Microsoft.AspNet.Server.Kestrel --configuration Release --server.urls http://+:\$PORT
 EOT
 	fi
 fi
